@@ -1,0 +1,65 @@
+apisix:
+  enable_control: true
+  control:
+   ip: 0.0.0.0
+   port: 9090
+
+  node_listen:
+    - ip: 0.0.0.0
+      port: 8000
+  ssl:
+    enable: true
+    listen:
+      - ip: 0.0.0.0
+        port: 8443
+        ennable_http2: true
+    ssl_protocols: TLSv1.1 TLSv1.2 TLSv1.3
+    ssl_trusted_certificate: /etc/ssl/certs/ca-certificates.crt
+  enable_server_tokens: false
+  enable_reuseport: true
+
+  stream_proxy: # TCP/UDP proxy
+    tcp: # TCP proxy address list
+      - addr: 9100
+        tls: true
+      - addr: 9101
+      - addr: "127.0.0.1:9102"
+    udp: # UDP proxy address list
+      - 9200
+      - "127.0.0.1:9211"
+
+nginx_config:
+  event:
+    worker_connections: 106200
+  http:
+    real_ip_header: Cf-Connecting-Ip
+    real_ip_recursive: on
+    real_ip_from:
+      - 0.0.0.0/0
+      - ::/0
+
+deployment:
+  role: traditional
+  role_traditional:
+    config_provider: etcd
+  etcd:
+    host:
+      - "http://etcd:2379"
+  admin:
+    allow_admin:
+      - 0.0.0.0/0
+      - 127.0.0.0/24
+    admin_listen:        
+      ip: 0.0.0.0
+      port: 8001
+    enable_admin_cors: true
+    admin_key:
+    - name: admin
+      key: edd1c9f034335f136f87ad84b625c8f1  # using fixed API token has security risk, please update it when you deploy to production environment
+      role: admin
+
+plugin_attr:
+  prometheus:
+    export_addr:
+      ip: 0.0.0.0
+      port: 9091

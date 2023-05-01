@@ -1,0 +1,39 @@
+services:
+  etcd:
+    image: quay.io/coreos/etcd:${ETCD_VERSION:-v3.5.7}
+    restart: always
+    container_name: etcd
+    environment:
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_DATA_DIR=/db/etcd/data
+      - ETCD_WAL_DIR=/db/etcd/wal
+    volumes:
+      - ./etcd_data:/db/etcd
+    ports:
+      - 127.0.0.1:2379:2379
+
+  apisix:
+    image: apache/apisix:${APISIX_VERSION:-latest}
+    restart: always
+    container_name: apisix
+    ports:
+      - "80:8000"   # Proxy HTTP Port
+      - "443:8443"  # Proxy HTTPS Port
+      - "8001:8001" # Admin Port
+      - "9090:9090" # Control API
+      - "9091:9091" # Prometheus
+      # - "9100:9100" # TCP Proxy Port
+      # - "9200:9200" # UDP Proxy Port
+    volumes:
+      - ./conf/apisix-config.yaml:/usr/local/apisix/conf/config.yaml
+      - ./logs:/usr/local/apisix/logs
+
+  dashboard:
+    image: apache/apisix-dashboard:${DASHBOARD_VERSION:-latest}
+    restart: always
+    container_name: apisix_dashboard
+    ports:
+      - "127.0.0.1:9000:9000"
+    volumes:
+      - ./conf/apisix-dashboard-config.yaml:/usr/local/apisix-dashboard/conf/conf.yaml
