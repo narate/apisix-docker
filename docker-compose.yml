@@ -1,3 +1,4 @@
+version: '3'
 services:
   etcd:
     image: quay.io/coreos/etcd:${ETCD_VERSION:-v3.5.7}
@@ -34,6 +35,6 @@ services:
     restart: always
     container_name: apisix_dashboard
     ports:
-      - "127.0.0.1:9000:9000"
+      - "9000:9000"
     volumes:
       - ./conf/apisix-dashboard-config.yaml:/usr/local/apisix-dashboard/conf/conf.yaml
